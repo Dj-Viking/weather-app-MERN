@@ -25,6 +25,10 @@ const userSchema = new Schema
     favoriteCities: [
       City.schema
     ],
+    personalApiKey: {//hash this too, ensure the keys are hashed and only accessible by the logged in user
+      type: String,
+      trim: true
+    }
   }
 );
 
@@ -60,6 +64,24 @@ userSchema.pre('save',
     next();
   }
 );
+
+userSchema.pre('save',
+  async function(next) {
+    //checking if isNew property is truthy
+    if (
+      this.isNew
+      ||
+      this.isModified('personalApiKey')
+    ){
+      this.personalApiKey = await bcrypt.hash
+      (
+        this.personalApiKey,
+        Number(process.env.SALT)
+      );
+    }
+    next();
+  }
+)
 
 //compare the incoming password with the hashed password
 userSchema.methods.isCorrectPassword = 
