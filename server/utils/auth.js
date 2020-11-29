@@ -20,7 +20,7 @@ module.exports = {
       token = token.split(' ').pop().trim();
     }
 
-    console.log("token", token);
+    //console.log("token", token);
 
     if (!token) {
       return req;

@@ -3,9 +3,19 @@ const { User, City } = require('../models');
 const { signToken } = require('../utils/auth.js');
 require('dotenv').config();
 const fetch = require('node-fetch');
+const {
+  temperatureConversion,
+  getWeatherIcon
+} = require('../utils/helpers.js');
 
 const resolvers = {
   Query: {
+    getCity: async (parent, args, context) => {
+      //find the city (should only be one)
+      const cityInfo = await City.find();
+      console.log(cityInfo);
+      return cityInfo;
+    },
     getSignedInUser: async (parent, args, context) => {
       if (context.user) {
         const user = await User.findById(context.user._id);
@@ -25,9 +35,79 @@ const resolvers = {
 
         return user;
       }
-    }
+    },
+
   },
   Mutation: {
+    APIgetCityCurrentDayForecast: async (parent, args, context) => {
+      // api fetch to weather app server using API key stored in env variable
+      //current weather api fetch
+      try {
+        const cityCurrentDayForecastInfo = 
+        await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?APPID=${process.env.WEATHER_KEY}&q=${args.cityName}`
+        );
+        const json = await cityCurrentDayForecastInfo.json();
+        console.log(json);
+
+        //get UV index separate fetch using longitude and latitude from previous api call
+        const cityCurrentUVIndexInfo = 
+        await fetch(
+          `https://api.openweathermap.org/data/2.5/uvi?APPID=${process.env.WEATHER_KEY}&lat=${json.coord.lat}&lon=${json.coord.lon}`
+        );
+        const UVjson = await cityCurrentUVIndexInfo.json();
+        console.log(UVjson);
+  
+        //set the values of the City model and return it back to wherever the query was made
+        
+        //find if a city exists and if so update, if not create
+        const cityInfo = await City.find();
+        console.log('\x1b[33m', 'checking if a city exists', '\x1b[00m');
+        console.log(cityInfo);
+        if (cityInfo[0] === undefined) {
+          const newCity =  await City.create
+          (
+            {
+              cityName: json.name,
+              humidity: json.main.humidity,
+              windSpeed: json.wind.speed,
+              description: json.weather[0].description,
+              countryName: json.sys.country,
+              icon: getWeatherIcon(json.weather[0].icon),
+              temperature: temperatureConversion(json.main.temp),
+              UVIndex: UVjson.value
+            }
+          );
+          console.log('\x1b[33m', 'creating brand new city', '\x1b[00m');
+          console.log(newCity);
+          return newCity;
+        } else {
+          console.log('\x1b[33m', 'city already exists, updating current city', '\x1b[00m');
+          // if it exists already update the city
+          const updatedCity = await City.findByIdAndUpdate
+          (
+            cityInfo[0]._id,
+            {
+              cityName: json.name,
+              humidity: json.main.humidity,
+              windSpeed: json.wind.speed,
+              description: json.weather[0].description,
+              countryName: json.sys.country,
+              icon: getWeatherIcon(json.weather[0].icon),
+              temperature: temperatureConversion(json.main.temp),
+              UVIndex: UVjson.value
+            },
+            {new: true}
+          );
+          console.log(updatedCity);
+          return updatedCity;
+        }
+      } catch(error) {
+        console.log('\x1b[33m', 'fetch failed', '\x1b[00m');
+        console.log(error);
+        return error;
+      }
+    },
     addUser: async (parent, args, context) => {
       try {
         const user = await User.create(args);

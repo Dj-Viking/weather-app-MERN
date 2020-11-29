@@ -3,12 +3,13 @@ import './App.css';
 
 //COMPONENTS
 import Header from './components/Header';
+import CityInfo from './components/CityInfo';
 
 function App() {
   return (
     <>
       <Header />
-      <div>city info will show up here</div>
+      <CityInfo />
     </>
   );
 }

@@ -10,7 +10,8 @@ const userSchema = new Schema
     username: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+      unique: true
     },
     email: {
       type: String,
@@ -37,7 +38,7 @@ const userSchema = new Schema
  * 
  * context of this set in the scope of this async anonymous function
  * 
- * in this case the function can be treated like an object using 'this'
+ * keyword "this" in this context is the schema itself which has properties defined in this file and default properties defined by mongoose
  * 
  * you add properties to the returned shape of 'this'
  * @params {String} action to preform on schema
@@ -73,6 +74,10 @@ userSchema.pre('save',
       ||
       this.isModified('personalApiKey')
     ){
+      if (!this.personalApiKey){
+        this.personalApiKey = null;
+        return;
+      }
       this.personalApiKey = await bcrypt.hash
       (
         this.personalApiKey,
