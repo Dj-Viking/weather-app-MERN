@@ -6,12 +6,20 @@ const typeDefs = gql`
     username: String
     email: String
     password: String
+    personalApiKey: String
     favoriteCities: [City]
   }
 
   type City {
     _id: ID
     cityName: String
+    humidity: Float
+    windSpeed: Float
+    description: String
+    countryName: String
+    icon: String
+    temperature: String
+    UVIndex: Float
   }
 
   type Auth {
@@ -23,13 +31,21 @@ const typeDefs = gql`
     getSignedInUser: User
 
     getUserFavoriteCities: [City]
-  }
 
+    getCity: [City]
+
+  }
+  
   type Mutation {
+    APIgetCityCurrentDayForecast(
+      cityName: String!
+    ): City
+
     addUser(
       username: String!
       email: String!
       password: String!
+      personalApiKey: String
     ): Auth
     
     login(
