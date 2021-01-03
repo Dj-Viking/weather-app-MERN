@@ -4,7 +4,7 @@ import React from 'react'
 import { useSelector, useDispatch } from 'react-redux';
 
 //graphQL queries
-import {useQuery} from '@apollo/react-hooks';
+import {useQuery, useMutation} from '@apollo/react-hooks';
 
 //ACTIONS
 import {
