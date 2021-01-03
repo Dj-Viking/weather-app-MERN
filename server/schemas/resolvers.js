@@ -3,6 +3,7 @@ const { User, City } = require('../models');
 const { signToken } = require('../utils/auth.js');
 require('dotenv').config();
 const fetch = require('node-fetch');
+const utf8 = require('utf8');
 const {
   temperatureConversion,
   getWeatherIcon
@@ -10,12 +11,14 @@ const {
 
 const resolvers = {
   Query: {
+
     getCity: async (parent, args, context) => {
       //find the city (should only be one)
       const cityInfo = await City.find();
       console.log(cityInfo);
       return cityInfo;
     },
+
     getSignedInUser: async (parent, args, context) => {
       if (context.user) {
         const user = await User.findById(context.user._id);
@@ -34,26 +37,32 @@ const resolvers = {
         const user = await User.findById(context.user._id);
 
         return user;
+      } else {
+        throw new AuthenticationError('must be logged in to do that');
       }
     },
 
   },
   Mutation: {
+    
     APIgetCityCurrentDayForecast: async (parent, args, context) => {
+      console.log('\x1b[33m', 'checking the argument sent into this function', '\x1b[00m');
+      console.log(args);
       // api fetch to weather app server using API key stored in env variable
       //current weather api fetch
       try {
         const cityCurrentDayForecastInfo = 
         await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?APPID=${process.env.WEATHER_KEY}&q=${args.cityName}`
+          utf8.encode(`https://api.openweathermap.org/data/2.5/weather?APPID=${process.env.WEATHER_KEY}&q=${args.cityName}`)
         );
         const json = await cityCurrentDayForecastInfo.json();
+        console.log('\x1b[33m', 'checking the json', '\x1b[00m');
         console.log(json);
 
         //get UV index separate fetch using longitude and latitude from previous api call
         const cityCurrentUVIndexInfo = 
         await fetch(
-          `https://api.openweathermap.org/data/2.5/uvi?APPID=${process.env.WEATHER_KEY}&lat=${json.coord.lat}&lon=${json.coord.lon}`
+          utf8.encode(`https://api.openweathermap.org/data/2.5/uvi?APPID=${process.env.WEATHER_KEY}&lat=${json.coord.lat}&lon=${json.coord.lon}`)
         );
         const UVjson = await cityCurrentUVIndexInfo.json();
         console.log(UVjson);
@@ -108,6 +117,7 @@ const resolvers = {
         return error;
       }
     },
+
     addUser: async (parent, args, context) => {
       try {
         const user = await User.create(args);
@@ -117,6 +127,7 @@ const resolvers = {
         console.log(error);
       }
     },
+
     updateUserFavoritedCities: async (
       parent, 
       args, 
@@ -143,6 +154,7 @@ const resolvers = {
         throw new AuthenticationError('must be logged in to do that');
       }
     },
+
     login: async (parent, {email, password}) => {
       const user = await User.findOne({email});
       if (!user) {

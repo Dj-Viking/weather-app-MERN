@@ -1,6 +1,11 @@
 const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
+
+  directive @constraint(
+    pattern: String
+  ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
   type User {
     _id: ID
     username: String
@@ -34,6 +39,10 @@ const typeDefs = gql`
 
     getCity: [City]
 
+  }
+
+  input CityInput {
+    cityName: String!
   }
   
   type Mutation {

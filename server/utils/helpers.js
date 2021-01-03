@@ -23,7 +23,7 @@ function temperatureConversion(num) {
   }
 
   //return the entire string of both temperatures
-  return `${tempConvKtoC(num)}°F / ${tempConvKtoF(num)}°C`;
+  return `${tempConvKtoC(num)}°C / ${tempConvKtoF(num)}°F`;
 };
 
 /**
