@@ -85,7 +85,8 @@ const resolvers = {
               icon: getWeatherIcon(json.weather[0].icon),
               temperature: temperatureConversion(json.main.temp),
               UVIndex: UVjson.value
-            }
+            },
+            {new: true}
           );
           console.log('\x1b[33m', 'creating brand new city', '\x1b[00m');
           console.log(newCity);
