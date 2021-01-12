@@ -1,4 +1,17 @@
-import React from 'react'
+import React, {useState} from 'react'
+
+import CityInfo from '../../components/CityInfo';
+
+//USE MUTATION and QUERY
+import {useMutation} from '@apollo/react-hooks'
+
+//mutation
+import {
+  GET_CITY_INFO
+} from '../../utils/mutations.js';
+
+//moment
+import moment from 'moment';
 
 
 //SVG ICONS
@@ -51,9 +64,46 @@ const CitySearch = () => {
   };
 
 
-  function handleSubmit(event) {
+  const [cityNameValue, setCityValue] = useState('');
+  function onCityNameChange(event) {
+    //console.log(event.target.value);
+    setCityValue(event.target.value);
+  }
+
+  //GRAPHQL QUERY and MUTATION
+  //const cityQueryResponse = useQuery(GET_CITY_SEARCHED);
+  const [getCityInfo] = useMutation(GET_CITY_INFO);
+
+  const [theCityInfo, setTheCityInfo] = useState({});
+
+  const today = new Date();
+  const formattedDate = moment(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    )
+  ).format('MMM DD, YYYY');
+  
+  async function handleSubmit(event) {
     event.preventDefault();
     console.log('submitted');
+    try {
+      const cityInfo = await getCityInfo
+      (
+        {
+          variables: {
+            cityName: cityNameValue
+          }
+        }
+      );
+      if (cityInfo.data) {
+        console.log('checking data from mutation', cityInfo.data);
+        setTheCityInfo(cityInfo.data.APIgetCityCurrentDayForecast);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -76,7 +126,9 @@ const CitySearch = () => {
             style={inputStyles}
             type="text"
             name="city-search"
-            autofocus="true"
+            value={cityNameValue}
+            onChange={onCityNameChange}
+            autoFocus={true}
             placeholder="City Name"
             autoComplete="off"
           />
@@ -92,6 +144,7 @@ const CitySearch = () => {
           </button>
         </div>
       </form>
+      <CityInfo cityInfo={theCityInfo} formattedDate={formattedDate}/>
     </>
   );
 };

@@ -14,3 +14,19 @@ export const USER_QUERY = gql`
     }
   }
 `;
+
+export const GET_CITY_SEARCHED = gql`
+  {
+    getCity{
+      _id
+      cityName
+      humidity
+      windSpeed
+      description
+      countryName
+      icon
+      temperature
+      UVIndex
+    }
+  }
+`;
