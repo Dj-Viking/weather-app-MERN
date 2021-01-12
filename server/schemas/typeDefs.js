@@ -27,6 +27,17 @@ const typeDefs = gql`
     UVIndex: Float
   }
 
+  type CityFiveDayForecast {
+    _id: ID
+    cityName: String
+    temp: String
+    humid: Float
+    wind: Float
+    desc: String
+    _icon: String
+    date: String
+  }
+
   type Auth {
     token: ID
     user: User
@@ -49,6 +60,10 @@ const typeDefs = gql`
     APIgetCityCurrentDayForecast(
       cityName: String!
     ): City
+
+    APIgetCityFiveDayForecast(
+      cityName: String!
+    ): [CityFiveDayForecast]
 
     addUser(
       username: String!
