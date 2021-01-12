@@ -1,8 +1,9 @@
 const { AuthenticationError } = require('apollo-server-express');
-const { User, City } = require('../models');
+const { User, City, CityFiveDayForecast } = require('../models');
 const { signToken } = require('../utils/auth.js');
 require('dotenv').config();
 const fetch = require('node-fetch');
+const moment = require('moment');
 const utf8 = require('utf8');
 const {
   temperatureConversion,
@@ -44,6 +45,107 @@ const resolvers = {
 
   },
   Mutation: {
+
+    APIgetCityFiveDayForecast: async (parent, args, context) => {
+
+      try {
+        const cityCurrentFiveDayForecastInfo =
+        await fetch(
+          utf8.encode(`https://api.openweathermap.org/data/2.5/forecast?APPID=${process.env.WEATHER_KEY}&q=${args.cityName}`)
+        );
+        const fiveDayJson = await cityCurrentFiveDayForecastInfo.json();
+        //console.log('five day forecast info', fiveDayJson.list);
+        //create array to set the value of the city model five day property
+        const fiveDayArray = [];
+        for (let i = 0; i < fiveDayJson.list.length; i++) 
+        {
+          if (i === 6) 
+          {
+            //console.log('day 1', fiveDayJson.list[i]);
+            fiveDayArray.push(
+              {
+                cityName: args.cityName,
+                temp: temperatureConversion(fiveDayJson.list[i].main.temp),
+                humid: fiveDayJson.list[i].main.humidity,
+                wind: fiveDayJson.list[i].wind.speed,
+                desc: fiveDayJson.list[i].weather[0].description,
+                _icon: getWeatherIcon(fiveDayJson.list[i].weather[0].icon),
+                date: moment(fiveDayJson.list[i].dt_txt).format('MMM DD, YYYY')
+              }
+            );
+          }
+          else if (i === 14)
+          {
+            // console.log('day 2', fiveDayJson.list[i]);
+            fiveDayArray.push(
+              {
+                cityName: args.cityName,
+                temp: temperatureConversion(fiveDayJson.list[i].main.temp),
+                humid: fiveDayJson.list[i].main.humidity,
+                wind: fiveDayJson.list[i].wind.speed,
+                desc: fiveDayJson.list[i].weather[0].description,
+                _icon: getWeatherIcon(fiveDayJson.list[i].weather[0].icon),
+                date: moment(fiveDayJson.list[i].dt_txt).format('MMM DD, YYYY')
+              }
+            );
+          }
+          else if (i === 22)
+          {
+            // console.log('day 3', fiveDayJson.list[i]);
+            fiveDayArray.push(
+              {
+                cityName: args.cityName,
+                temp: temperatureConversion(fiveDayJson.list[i].main.temp),
+                humid: fiveDayJson.list[i].main.humidity,
+                wind: fiveDayJson.list[i].wind.speed,
+                desc: fiveDayJson.list[i].weather[0].description,
+                _icon: getWeatherIcon(fiveDayJson.list[i].weather[0].icon),
+                date: moment(fiveDayJson.list[i].dt_txt).format('MMM DD, YYYY')
+              }
+            );
+          }
+          else if (i === 30)
+          {
+            // console.log('day 4', fiveDayJson.list[i]);
+            fiveDayArray.push(
+              {
+                cityName: args.cityName,
+                temp: temperatureConversion(fiveDayJson.list[i].main.temp),
+                humid: fiveDayJson.list[i].main.humidity,
+                wind: fiveDayJson.list[i].wind.speed,
+                desc: fiveDayJson.list[i].weather[0].description,
+                _icon: getWeatherIcon(fiveDayJson.list[i].weather[0].icon),
+                date: moment(fiveDayJson.list[i].dt_txt).format('MMM DD, YYYY')
+              }
+            );
+          }
+          else if (i === 38)
+          {
+            // console.log('day 5', fiveDayJson.list[i]);
+            fiveDayArray.push(
+              {
+                cityName: args.cityName,
+                temp: temperatureConversion(fiveDayJson.list[i].main.temp),
+                humid: fiveDayJson.list[i].main.humidity,
+                wind: fiveDayJson.list[i].wind.speed,
+                desc: fiveDayJson.list[i].weather[0].description,
+                _icon: getWeatherIcon(fiveDayJson.list[i].weather[0].icon),
+                date: moment(fiveDayJson.list[i].dt_txt).format('MMM DD, YYYY')
+              }
+            );
+          }
+        }
+        // console.log('checking five day array to assign to model', fiveDayArray);
+  
+        //insert many into city five day forecast model
+        const fiveDays = await CityFiveDayForecast.insertMany(fiveDayArray);
+        console.log(fiveDays);
+        return fiveDays;
+
+      } catch (error) {
+        console.log(error);
+      }
+    },
     
     APIgetCityCurrentDayForecast: async (parent, args, context) => {
       console.log('\x1b[33m', 'checking the argument sent into this function', '\x1b[00m');
@@ -57,7 +159,7 @@ const resolvers = {
         );
         const json = await cityCurrentDayForecastInfo.json();
         console.log('\x1b[33m', 'checking the json', '\x1b[00m');
-        console.log(json);
+        console.log('city current day forecast info', json);
 
         //get UV index separate fetch using longitude and latitude from previous api call
         const cityCurrentUVIndexInfo = 
@@ -65,8 +167,7 @@ const resolvers = {
           utf8.encode(`https://api.openweathermap.org/data/2.5/uvi?APPID=${process.env.WEATHER_KEY}&lat=${json.coord.lat}&lon=${json.coord.lon}`)
         );
         const UVjson = await cityCurrentUVIndexInfo.json();
-        console.log(UVjson);
-  
+        console.log('UV json', UVjson);
         //set the values of the City model and return it back to wherever the query was made
         
         //find if a city exists and if so update, if not create

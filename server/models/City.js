@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const CityFiveDayForecast = require('./CityFiveDayForecast.js');
 const {Schema} = mongoose;
 
 const citySchema = new Schema
@@ -35,8 +36,7 @@ const citySchema = new Schema
     UVIndex: {
       type: Number,
       trim: true
-    },
-    
+    }
   }
 );
 
